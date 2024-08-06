@@ -8,7 +8,8 @@ import os
 import json
 
 # OpenAI API 키 설정
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+api_key = st.secrets["OPENAI_API_KEY"]
+client = openai.OpenAI(api_key=api_key)
 
 # 세션 상태 초기화
 if 'user_id' not in st.session_state:
@@ -25,12 +26,14 @@ if not os.path.exists(SAVE_DIR):
 
 def generate_image(prompt):
     try:
-        response = openai.Image.create(
+        response = client.images.generate(
+            model="dall-e-3",
             prompt=prompt,
-            n=1,
-            size="1024x1024"
+            size="1024x1024",
+            quality="standard",
+            n=1
         )
-        image_url = response['data'][0]['url']
+        image_url = response.data[0].url
         img_response = requests.get(image_url)
         img_response.raise_for_status()
         img = Image.open(BytesIO(img_response.content))
